@@ -14,7 +14,7 @@ import { testIds } from '../components/testIds';
 import { grafanaAdapter } from '../adapter';
 import { getStyles, logoImgStyle } from './styles';
 
-const PLUGIN_LOGO_URL = '/public/plugins/alertcraft-alertwhatif-app/img/logo.png';
+const PLUGIN_LOGO_URL = '/public/plugins/pantrypulse-alertwhatif-app/img/logo.png';
 
 type DeepLinkProps = Pick<
   React.ComponentProps<typeof CanonicalWhatIfPage>,

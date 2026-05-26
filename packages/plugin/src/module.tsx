@@ -19,7 +19,7 @@ function ruleUidFromCurrentLocation(): string | null {
   return match?.[1] ?? null;
 }
 
-const WHATIF_BASE_PATH = '/a/alertcraft-alertwhatif-app/whatif';
+const WHATIF_BASE_PATH = '/a/pantrypulse-alertwhatif-app/whatif';
 
 // CommandPalette link is the actually-wired entry point. Cmd+K (or
 // the top-bar search icon) → type "alert-whatif" → click. If the user

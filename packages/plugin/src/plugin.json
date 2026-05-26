@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "app",
   "name": "Alert What-If",
-  "id": "alertcraft-alertwhatif-app",
+  "id": "pantrypulse-alertwhatif-app",
   "info": {
     "keywords": ["alerting", "what-if", "rule-tuning", "replay", "diagnostics"],
     "description": "Run any Grafana alert rule against real historical data and see what it would have done. The chart shows Grafana's actual transitions side-by-side with the rule's mathematical algorithm; tweak threshold / for / interval and re-evaluate without touching the live rule.",

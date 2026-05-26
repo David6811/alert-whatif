@@ -1,7 +1,7 @@
 services:
   grafana:
     user: root
-    container_name: 'alertcraft-alertwhatif-app'
+    container_name: 'pantrypulse-alertwhatif-app'
 
     build:
       context: .
@@ -16,9 +16,9 @@ services:
       - prometheus
     volumes:
       - grafana-data:/var/lib/grafana
-      - ../dist:/var/lib/grafana/plugins/alertcraft-alertwhatif-app
+      - ../dist:/var/lib/grafana/plugins/pantrypulse-alertwhatif-app
       - ../provisioning:/etc/grafana/provisioning
-      - ..:/root/alertcraft-alertwhatif-app
+      - ..:/root/pantrypulse-alertwhatif-app
 
     env_file:
       - path: ../.env
@@ -26,10 +26,10 @@ services:
 
     environment:
       NODE_ENV: development
-      GF_LOG_FILTERS: plugin.alertcraft-alertwhatif-app:debug
+      GF_LOG_FILTERS: plugin.pantrypulse-alertwhatif-app:debug
       GF_LOG_LEVEL: debug
       GF_DATAPROXY_LOGGING: 1
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: alertcraft-alertwhatif-app
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: pantrypulse-alertwhatif-app
 
   # Self-contained Prometheus so the plugin is testable with no external
   # data source or token — scrapes itself, giving the provisioned sample

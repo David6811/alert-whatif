@@ -38,7 +38,7 @@ Grafana ≥ 12.3.0 · a Prometheus datasource (the one your rules evaluate again
 ## Install
 
 ```bash
-grafana cli plugins install alertcraft-alertwhatif-app   # then restart Grafana
+grafana cli plugins install pantrypulse-alertwhatif-app   # then restart Grafana
 ```
 
 Or **Connections → Add new connection → "Alert What-If" → Install** (Grafana Cloud).
