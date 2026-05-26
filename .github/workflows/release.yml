@@ -1,0 +1,53 @@
+name: Release
+
+# Publish a workspace package to npm when a tag like `core-v0.1.1` or
+# `ui-v0.2.0` is pushed. The tag prefix selects the package; the suffix
+# must match that package's package.json version.
+
+on:
+  push:
+    tags:
+      - 'core-v*'
+      - 'ui-v*'
+
+permissions:
+  contents: read
+  id-token: write # required for npm provenance attestation
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve package + version from tag
+        id: pkg
+        run: |
+          tag="$GITHUB_REF_NAME"
+          echo "name=${tag%-v*}" >> "$GITHUB_OUTPUT"
+          echo "version=${tag##*-v}" >> "$GITHUB_OUTPUT"
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Tag version must match package.json
+        run: |
+          want='${{ steps.pkg.outputs.version }}'
+          have="$(node -p "require('./packages/${{ steps.pkg.outputs.name }}/package.json').version")"
+          test "$want" = "$have" || { echo "::error::tag version $want != package.json $have"; exit 1; }
+
+      - run: pnpm --filter "@alert-whatif/${{ steps.pkg.outputs.name }}" build
+      - run: pnpm --filter "@alert-whatif/${{ steps.pkg.outputs.name }}" test
+
+      - name: Publish to npm with provenance
+        working-directory: packages/${{ steps.pkg.outputs.name }}
+        run: pnpm publish --access public --provenance --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
