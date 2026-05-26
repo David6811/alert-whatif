@@ -204,7 +204,7 @@ importers:
   packages/ui:
     dependencies:
       '@alert-whatif/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
       '@emotion/css':
         specifier: 11.10.6
@@ -237,6 +237,9 @@ importers:
       react-dom:
         specifier: ^18.3.0
         version: 18.3.1(react@18.3.1)
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(@swc/core@1.15.40(@swc/helpers@0.5.22))(postcss@8.5.15)(typescript@5.9.2)
       typescript:
         specifier: ^5.9.0
         version: 5.9.2
