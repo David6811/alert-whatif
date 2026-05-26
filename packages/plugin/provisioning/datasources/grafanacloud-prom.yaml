@@ -1,3 +1,6 @@
+# Optional: only useful if you supply GC_PROM_URL + GC_PROM_TOKEN in .env
+# (see ../.env.example). Reviewers can ignore it — the default Prometheus
+# datasource (prometheus.yaml) is self-contained and needs no token.
 apiVersion: 1
 
 datasources:
@@ -6,7 +9,7 @@ datasources:
     type: prometheus
     access: proxy
     url: $GC_PROM_URL
-    isDefault: true
+    isDefault: false
     editable: true
     jsonData:
       httpMethod: POST
