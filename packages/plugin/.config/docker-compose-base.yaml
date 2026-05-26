@@ -1,7 +1,7 @@
 services:
   grafana:
     user: root
-    container_name: 'weixu-alertwhatif-app'
+    container_name: 'alertcraft-alertwhatif-app'
 
     build:
       context: .
@@ -12,11 +12,13 @@ services:
         anonymous_auth_enabled: ${ANONYMOUS_AUTH_ENABLED:-true}
     ports:
       - 3000:3000/tcp
+    depends_on:
+      - prometheus
     volumes:
       - grafana-data:/var/lib/grafana
-      - ../dist:/var/lib/grafana/plugins/weixu-alertwhatif-app
+      - ../dist:/var/lib/grafana/plugins/alertcraft-alertwhatif-app
       - ../provisioning:/etc/grafana/provisioning
-      - ..:/root/weixu-alertwhatif-app
+      - ..:/root/alertcraft-alertwhatif-app
 
     env_file:
       - path: ../.env
@@ -24,10 +26,21 @@ services:
 
     environment:
       NODE_ENV: development
-      GF_LOG_FILTERS: plugin.weixu-alertwhatif-app:debug
+      GF_LOG_FILTERS: plugin.alertcraft-alertwhatif-app:debug
       GF_LOG_LEVEL: debug
       GF_DATAPROXY_LOGGING: 1
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: weixu-alertwhatif-app
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: alertcraft-alertwhatif-app
+
+  # Self-contained Prometheus so the plugin is testable with no external
+  # data source or token — scrapes itself, giving the provisioned sample
+  # alert rule (provisioning/alerting/) real time-varying data to replay.
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: 'alertwhatif-prometheus'
+    ports:
+      - 9090:9090/tcp
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
 volumes:
   grafana-data:

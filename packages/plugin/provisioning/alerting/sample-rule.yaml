@@ -1,0 +1,76 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: alert-whatif-demo
+    folder: Demo
+    interval: 1m
+    rules:
+      - uid: aw-demo-heap-inuse
+        title: prometheus-heap-inuse
+        condition: C
+        for: 0m
+        noDataState: OK
+        execErrState: Error
+        isPaused: false
+        annotations:
+          summary: Sample rule for the Alert What-If plugin — Prometheus heap (self-scraped, no external data needed).
+        labels:
+          severity: warning
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              datasource:
+                type: prometheus
+                uid: prometheus
+              editorMode: code
+              expr: go_memstats_heap_inuse_bytes{job="prometheus"}
+              instant: false
+              intervalMs: 15000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: mean
+              type: reduce
+              refId: B
+              settings:
+                mode: dropNN
+          - refId: C
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              type: threshold
+              refId: C
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [20000000]
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    type: last
+                    params: []
+                  type: query
