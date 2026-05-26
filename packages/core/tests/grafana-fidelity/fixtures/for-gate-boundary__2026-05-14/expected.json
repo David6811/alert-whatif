@@ -1,0 +1,32 @@
+{
+  "events": [
+    {
+      "kind": "Pending",
+      "from": 1778767230000,
+      "until": 1778767350000
+    },
+    {
+      "kind": "Firing",
+      "from": 1778767350000,
+      "until": 1778767770000
+    },
+    {
+      "kind": "Resolved",
+      "at": 1778767770000
+    }
+  ],
+  "assertions": {
+    "pendingEntryWithinMs": {
+      "expected": 1778767230000,
+      "toleranceMs": 5000
+    },
+    "firingEntryWithinMs": {
+      "expected": 1778767350000,
+      "toleranceMs": 5000
+    },
+    "firingEntryOffsetFromPending": {
+      "expectedMs": 120000,
+      "toleranceMs": 5000
+    }
+  }
+}

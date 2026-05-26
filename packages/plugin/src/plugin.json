@@ -1,0 +1,67 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "app",
+  "name": "Alert What-If",
+  "id": "alertcraft-alertwhatif-app",
+  "info": {
+    "keywords": ["alerting", "what-if", "rule-tuning", "replay", "diagnostics"],
+    "description": "Run any Grafana alert rule against real historical data and see what it would have done. The chart shows Grafana's actual transitions side-by-side with the rule's mathematical algorithm; tweak threshold / for / interval and re-evaluate without touching the live rule.",
+    "author": {
+      "name": "Alertcraft",
+      "url": "https://github.com/David6811/alert-whatif"
+    },
+    "logos": {
+      "small": "img/logo-small.png",
+      "large": "img/logo.png"
+    },
+    "screenshots": [
+      {
+        "name": "What-If view",
+        "path": "img/screenshot-whatif.png"
+      }
+    ],
+    "links": [
+      {
+        "name": "Repository",
+        "url": "https://github.com/David6811/alert-whatif"
+      },
+      {
+        "name": "Documentation",
+        "url": "https://github.com/David6811/alert-whatif/tree/main/docs"
+      },
+      {
+        "name": "Bug tracker",
+        "url": "https://github.com/David6811/alert-whatif/issues"
+      },
+      {
+        "name": "License",
+        "url": "https://github.com/David6811/alert-whatif/blob/main/LICENSE"
+      }
+    ],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "includes": [
+    {
+      "type": "page",
+      "name": "What-If",
+      "path": "/a/%PLUGIN_ID%/whatif",
+      "addToNav": true,
+      "defaultNav": true
+    }
+  ],
+  "preload": true,
+  "dependencies": {
+    "grafanaDependency": ">=12.3.0",
+    "plugins": []
+  },
+  "extensions": {
+    "addedLinks": [
+      {
+        "targets": ["grafana/commandpalette/action"],
+        "title": "Test alert in alert-whatif",
+        "description": "Open the pasted rule in alert-whatif and see what it would have done on real historical data."
+      }
+    ]
+  }
+}

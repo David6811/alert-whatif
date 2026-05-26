@@ -1,0 +1,57 @@
+{
+  "name": "@alert-whatif/core",
+  "version": "0.1.0",
+  "description": "Framework-agnostic alert evaluator and scenario library. Pure TypeScript — no React, no Vue, no Grafana SDK. Consumed by @alert-whatif/plugin and @alert-whatif/demo.",
+  "license": "MIT",
+  "author": "Alertcraft",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/David6811/alert-whatif.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/David6811/alert-whatif#readme",
+  "bugs": "https://github.com/David6811/alert-whatif/issues",
+  "keywords": [
+    "grafana",
+    "alerting",
+    "alert-rules",
+    "evaluator",
+    "observability"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "apiVersion": "rules.alerting.grafana.app/v0alpha1",
+  "kind": "AlertRule",
+  "metadata": {
+    "annotations": {
+      "grafana.app/folder": "tong-sui-ops"
+    },
+    "labels": {
+      "grafana.app/folder": "tong-sui-ops"
+    },
+    "name": "qrc-demo-range-max"
+  },
+  "spec": {
+    "annotations": {
+      "summary": "Real-Grafana validation of alert-replay simulator scenario ① — 'Fires, never resolves' (3-node DAG: range → reduce(mean) → threshold)",
+      "description": "If you can read this email, scenario ① of the alert-replay simulator fired in real Grafana with the same params it uses to mock the lifecycle.\n\nThis alert is the live companion to grafana/tools/alert-replay scenario ▶① — 'Fires, never resolves'. The simulator predicts: with the params below, mean(rate samples)>0.05 holds continuously, the alert transitions Normal → Pending (after one wait-tick) → Alerting (after the for-window), and never returns to Normal because the underlying condition keeps holding.\n\nParameters — must match the simulator one-for-one:\n  rateWindow      = [2m]    (PromQL inner)\n  relativeTimeRange = 4m → 0s\n  reducer         = mean    (NOT max — scenario ① uses mean)\n  step / intervalMs = 15s   → 17 samples per evaluation (4m ÷ 15s + 1)\n  threshold       = 0.05\n  for             = 2m      (debounce window in Pending)\n  trigger.interval = 1m     (rule evaluation cadence)\n\nDAG (same shape as the slide-45 demo, retained because range mode + scalar threshold needs an explicit reduce node):\n  A — query node, range=true, [2m] rate over 4m relativeTimeRange → time series\n  B — expression node, type=reduce, reducer=mean → scalar\n  C — expression node, type=threshold, gt 0.05 (source: true) → 0/1\n\nExpected lifecycle in production (real QRC traffic is 0.29-0.83 req/s, well above the 0.05 threshold):\n  t=0       — Normal\n  t≈0:30+   — first eval where mean crosses 0.05 → Pending starts\n  t≈2:30+   — for-window (2m) expires → Alerting → email sent\n  t=∞       — never resolves; mean stays > 0.05 because traffic continues\n\nThis is the simulator's scenario ① 'delay = 2:30 = 30s wait-tick + 2:00 for-window' line, validated against real Grafana evaluation. If the actual fire time deviates more than ~30s from t≈2:30, the simulator's mock and the real engine have diverged and the simulator needs a fix.\n\nGo template values (preserved from previous demo):\n  $value             = {{ $value }}\n  $labels.severity   = {{ $labels.severity }}\n  $labels.job        = {{ $labels.job }}\n  $labels.alertname  = {{ $labels.alertname }}\n\nRouting:\n  spec.labels { severity=warning, job=qrc-uat }\n    → NotificationPolicy matcher (qrc-uat warning branch)\n    → ContactPoint: David UAT Email\n    → xuwei19850423@gmail.com (single recipient)\n\nCleanup: revert via the demo cleanup.sh once verification is done. Note the rule UID stays qrc-demo-range-max for back-compat with the cleanup/setup scripts; only the title and parameters changed.",
+      "runbook_url": "https://github.com/credoqr/qrc/tree/main/grafana/tools/alert-replay"
+    },
+    "execErrState": "Error",
+    "expressions": {
+      "A": {
+        "datasourceUID": "grafanacloud-prom",
+        "model": {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(alert_replay_burst_total[2m]))",
+          "instant": false,
+          "intervalMs": 15000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": true,
+          "refId": "A"
+        },
+        "relativeTimeRange": {
+          "from": "4m0s",
+          "to": "0s"
+        }
+      },
+      "B": {
+        "model": {
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "reducer": "mean",
+          "refId": "B",
+          "settings": {
+            "mode": "dropNN"
+          },
+          "type": "reduce"
+        },
+        "queryType": "expression"
+      },
+      "C": {
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  0.05
+                ],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "C"
+                ]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "B",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "C",
+          "type": "threshold"
+        },
+        "queryType": "expression",
+        "source": true
+      }
+    },
+    "for": "2m",
+    "labels": {
+      "severity": "warning",
+      "job": "qrc-uat"
+    },
+    "noDataState": "OK",
+    "paused": false,
+    "title": "demo-fires-never-resolves",
+    "trigger": {
+      "interval": "1m"
+    }
+  }
+}

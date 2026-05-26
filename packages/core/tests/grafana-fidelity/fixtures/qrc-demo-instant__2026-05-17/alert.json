@@ -1,0 +1,88 @@
+{
+  "apiVersion": "rules.alerting.grafana.app/v0alpha1",
+  "kind": "AlertRule",
+  "metadata": {
+    "annotations": {
+      "grafana.app/folder": "tong-sui-ops"
+    },
+    "labels": {
+      "grafana.app/folder": "tong-sui-ops"
+    },
+    "name": "qrc-demo-instant"
+  },
+  "spec": {
+    "annotations": {
+      "summary": "Instant-mode counterpart to qrc-demo-range-max — 2-node DAG (instant query → threshold, no reduce node)",
+      "description": "Recording target for alert-whatif's instant-mode fidelity fixture. Captures real Grafana state transitions on a rule whose query node has `instant:true`, demonstrating that an instant rule produces the same lifecycle as `reducer: Last` over a staleness-sized window.\n\nDAG:\n  A — query node, instant=true, relativeTimeRange.from=10m (staleness window)\n  B — expression node, type=threshold, gt 0.05 (source: true)\n\nLifecycle observed on 2026-05-17T07:33-07:43 UTC:\n  Push starts at 07:33:23Z (sample T0)\n  Pending entered at 07:36:30Z (T0+187s; rate had time to build past 0.05)\n  Firing  entered at 07:38:30Z (Pending + for=2m)\n  Push continued; rule remained Alerting → fixture captures \"fires, never resolves\".\n\nCleanup: `qrc-demo-instant` rule deleted from Grafana via DELETE /api/v1/provisioning/alert-rules/qrc-demo-instant immediately after this fixture was recorded."
+    },
+    "execErrState": "Error",
+    "expressions": {
+      "A": {
+        "datasourceUID": "grafanacloud-prom",
+        "model": {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafanacloud-prom"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(alert_replay_burst_total[2m]))",
+          "instant": true,
+          "intervalMs": 1000,
+          "legendFormat": "__auto",
+          "maxDataPoints": 43200,
+          "range": false,
+          "refId": "A"
+        },
+        "relativeTimeRange": {
+          "from": "10m0s",
+          "to": "0s"
+        }
+      },
+      "B": {
+        "model": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [0.05],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": ["B"]
+              },
+              "reducer": {
+                "params": [],
+                "type": "last"
+              },
+              "type": "query"
+            }
+          ],
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "A",
+          "intervalMs": 1000,
+          "maxDataPoints": 43200,
+          "refId": "B",
+          "type": "threshold"
+        },
+        "queryType": "expression",
+        "source": true
+      }
+    },
+    "for": "2m",
+    "labels": {
+      "severity": "warning",
+      "job": "qrc-uat"
+    },
+    "noDataState": "OK",
+    "paused": false,
+    "title": "demo-instant-fires-never-resolves",
+    "trigger": {
+      "interval": "1m"
+    }
+  }
+}

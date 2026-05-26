@@ -1,0 +1,28 @@
+{
+  "name": "qrc-demo-range-max__2026-05-09",
+  "description": "Scenario ① \"Fires, never resolves\" — alert-replay live test against real Grafana Cloud on 2026-05-09. Counter pushed at 8 req/s for ~258s, then stopped. Real Grafana transitioned Normal → Pending @ T0+27s → Firing @ T0+151s → Normal @ T0+650s (the last transition delayed by Grafana Cloud keep_firing_for hysteresis).",
+  "files": {
+    "alert": "alert.json",
+    "samples": "samples.json",
+    "expected": "expected.json"
+  },
+  "provenance": {
+    "sourceProject": "credoqr/qrc grafana/tools/alert-replay",
+    "sourceReadme": "grafana/tools/alert-replay/README.md § Validated against real Grafana",
+    "scenarioId": 1,
+    "scenarioName": "Fires, never resolves",
+    "runDate": "2026-05-09",
+    "runStartUtc": "2026-05-09T11:30:07Z",
+    "runStartEpochSec": 1778326207,
+    "samplesQuery": "sum(rate(alert_replay_burst_total[2m]))",
+    "samplesQueryStart": 1778326080,
+    "samplesQueryEnd": 1778326920,
+    "samplesQueryStepSec": 15,
+    "samplesCapturedVia": "Grafana Cloud Prometheus query_range API, fetched 2026-05-12 against pantrypulse.grafana.net (the same instance the May 9 run used). Counter retention preserves the run; this is a replay of the exact bytes Grafana's evaluator saw.",
+    "expectedCapturedVia": "Hand-transcribed from alert-replay README's \"Observed timeline (clean re-test, T0 = 21:30:07)\" table — live observations of the Grafana UI during the May 9 run. Grafana state-history API was queried but returned empty (Loki state history not enabled for this rule), so README is the only persistent record of state transitions.",
+    "knownDivergencesNotAsserted": [
+      "Grafana keep_firing_for hysteresis (~272s between rate-below-threshold and Normal). Step 14d.7 added Recovering + keepFiringFor support, but the qrc-demo-range-max rule does NOT set keep_firing_for in its JSON — the ~272s observed on 2026-05-09 came from a Grafana Cloud-level default whose exact value is unknown. This fixture uses keepFiringFor: 0 (the rule's actual configured value) and the test does not assert Resolved timing.",
+      "Tick wallclock alignment. Grafana evaluates at its scheduler cadence (independent of when samples started); alert-whatif anchors ticks at samples[0].t. The test allows ±60s tolerance on Pending/Firing entry times — Grafana's own ±60s natural jitter per trigger.interval=1m."
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "for-gate-boundary__2026-05-14",
+  "description": "For-gate boundary recording — captures the Pending → Firing → Resolved lifecycle for the demo-fires-never-resolves rule (for: 2m). Recorded live from Grafana Cloud on 2026-05-14 while push-metric.py scenario ② (Fires + resolves ~10 min) was driving the alert_replay_burst_total counter. Grafana's state.StartsAt (=activeAt) was set to 14:00:30Z at the first PASS eval, overwritten to 14:02:30Z when promoted to Alerting (matches state.go:165–172 — SetAlerting resets StartsAt). Resolution detected at the 14:09:30Z eval. This fixture targets Phase 1 of docs/05-fidelity-roadmap.md — pinning Grafana's for-gate timing so we can fix the tick-grid vs eval-clock alignment offset.",
+  "files": {
+    "alert":    "alert.json",
+    "samples":  "samples.json",
+    "expected": "expected.json"
+  },
+  "provenance": {
+    "sourceProject": "alert-whatif live recording via demo Vite proxy + scripts/push-controller.ts",
+    "scenarioName": "Fires + resolves (~10 min) — push-metric.py scenario 2",
+    "runDate": "2026-05-14",
+    "ruleUid": "qrc-demo-range-max",
+    "ruleTitle": "demo-fires-never-resolves",
+    "pushStartedAt": "2026-05-14T13:59:47Z",
+    "samplesQuery": "sum(rate(alert_replay_burst_total[2m]))",
+    "samplesQueryStart": 1778767200,
+    "samplesQueryEnd":   1778767920,
+    "samplesQueryStepSec": 15,
+    "evalGridOffsetMs": 30000,
+    "samplesCapturedVia": "Grafana Cloud Prometheus query_range API via the demo's Vite dev proxy (/api/grafana/api/datasources/proxy/uid/grafanacloud-prom/api/v1/query_range), fetched immediately after the lifecycle completed.",
+    "expectedCapturedVia": "Polled GET /api/prometheus/grafana/api/v1/rules every 5s during the lifecycle; emitted state-transition snapshots (saved under /tmp/fidelity-record-for-gate/snapshot-*.json). The recorded events[].from / .until / .at timestamps come from each transition's `lastEvaluation` field (= the wallclock of the Grafana eval that detected the transition), which equals `activeAt` on the same poll. State-history API was not queried (would have required Loki state history enablement).",
+    "observedTransitions": [
+      { "at": "2026-05-14T14:00:30Z", "to": "Pending", "activeAt": "2026-05-14T14:00:30Z" },
+      { "at": "2026-05-14T14:02:30Z", "to": "Firing",  "activeAt": "2026-05-14T14:02:30Z (Grafana SetAlerting reset StartsAt)" },
+      { "at": "2026-05-14T14:09:30Z", "to": "Normal",  "activeAt": "2026-05-14T14:09:30Z" }
+    ],
+    "knownDivergencesNotAsserted": [
+      "Phase 1.2 — Pending.from === Firing.from - 2m is the for-gate offset we're trying to pin. The fidelity test's pendingEntryWithinMs / firingEntryWithinMs assertions use ±60s tolerance (Grafana's natural eval jitter per trigger.interval=1m) but the underlying offset between Grafana's eval grid and our sample grid is sub-interval and worth investigating regardless. Once the test runs we'll know the actual delta."
+    ]
+  }
+}

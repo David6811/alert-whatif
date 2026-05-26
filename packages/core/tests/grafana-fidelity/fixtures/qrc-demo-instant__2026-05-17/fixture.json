@@ -1,0 +1,28 @@
+{
+  "name": "qrc-demo-instant__2026-05-17",
+  "description": "Instant-mode counterpart to qrc-demo-range-max — 2-node DAG (instant query → threshold, no reduce node). Counter pushed at 8 req/s via push-metric.py; real Grafana transitioned Normal → Pending @ 2026-05-17T07:36:30Z → Firing @ 07:38:30Z (Pending+2m). Push then stopped; rule remained Alerting (fires, never resolves) — same scenario as the range fixture, validates that an instant rule produces the same lifecycle.",
+  "files": {
+    "alert": "alert.json",
+    "samples": "samples.json",
+    "expected": "expected.json"
+  },
+  "provenance": {
+    "sourceProject": "credoqr/alert-whatif",
+    "scenarioName": "Instant query, fires never resolves",
+    "runDate": "2026-05-17",
+    "runStartUtc": "2026-05-17T07:33:23Z",
+    "runStartEpochSec": 1779003203,
+    "ruleUid": "qrc-demo-instant",
+    "ruleCreatedVia": "POST /api/v1/provisioning/alert-rules on pantrypulse.grafana.net at 2026-05-17T07:33:23Z; rule deleted after recording (DELETE /api/v1/provisioning/alert-rules/qrc-demo-instant)",
+    "samplesQuery": "sum(rate(alert_replay_burst_total[2m]))",
+    "samplesQueryStart": 1779003203,
+    "samplesQueryEnd": 1779003698,
+    "samplesQueryStepSec": 15,
+    "samplesCapturedVia": "Grafana Cloud Prometheus query_range API immediately after push ended. Counter retention preserves the run.",
+    "expectedCapturedVia": "Captured from Grafana's /api/prometheus/grafana/api/v1/alerts endpoint while the rule was active: state=Alerting, activeAt=2026-05-17T07:36:30Z. Pending start = activeAt; Firing start = activeAt + spec.for (2m). Firing.until uses emit.ts's open-lifecycle extension (lastSample.t + evaluationInterval = 1779003638000 + 60000).",
+    "knownDivergencesNotAsserted": [
+      "Tick wallclock alignment. Grafana evaluates at its scheduler cadence (independent of when samples started); alert-whatif anchors ticks at samples[0].t. The test allows ±60s tolerance on Pending/Firing entry times — Grafana's own ±60s natural jitter per trigger.interval=1m.",
+      "Resolution timing. This fixture captures 'fires, never resolves' (push stopped while still firing); no Resolved event is asserted."
+    ]
+  }
+}

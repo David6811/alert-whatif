@@ -1,0 +1,106 @@
+{
+  "uid": "qrc-demo-range-max",
+  "title": "high-burst-rate-reduce",
+  "folderUID": "tong-sui-ops",
+  "ruleGroup": "test-rules",
+  "condition": "C",
+  "data": [
+    {
+      "refId": "A",
+      "queryType": "",
+      "datasourceUid": "grafanacloud-prom",
+      "model": {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "grafanacloud-prom"
+        },
+        "editorMode": "code",
+        "expr": "sum(rate(alert_replay_burst_total[2m]))",
+        "instant": false,
+        "intervalMs": 15000,
+        "legendFormat": "__auto",
+        "maxDataPoints": 43200,
+        "range": true,
+        "refId": "A"
+      },
+      "relativeTimeRange": {
+        "from": 240,
+        "to": 0
+      }
+    },
+    {
+      "refId": "B",
+      "queryType": "expression",
+      "datasourceUid": "__expr__",
+      "model": {
+        "datasource": {
+          "type": "__expr__",
+          "uid": "__expr__"
+        },
+        "expression": "A",
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "reducer": "mean",
+        "refId": "B",
+        "settings": {
+          "mode": "dropNN"
+        },
+        "type": "reduce"
+      },
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
+      }
+    },
+    {
+      "refId": "C",
+      "queryType": "expression",
+      "datasourceUid": "__expr__",
+      "model": {
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [0.05],
+              "type": "gt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": ["C"]
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
+          }
+        ],
+        "datasource": {
+          "type": "__expr__",
+          "uid": "__expr__"
+        },
+        "expression": "B",
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "refId": "C",
+        "type": "threshold"
+      },
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
+      }
+    }
+  ],
+  "noDataState": "OK",
+  "execErrState": "Error",
+  "for": "2m",
+  "annotations": {
+    "summary": "alert-replay scenario ① — range-mode rule with reduce(mean) + threshold."
+  },
+  "labels": {
+    "severity": "warning",
+    "job": "qrc-uat"
+  },
+  "isPaused": false
+}

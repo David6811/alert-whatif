@@ -1,0 +1,23 @@
+{
+  "events": [
+    { "kind": "Pending", "from": 1779003390000, "until": 1779003510000 },
+    { "kind": "Firing", "from": 1779003510000, "until": 1779003698000 }
+  ],
+  "assertions": {
+    "pendingEntryWithinMs": {
+      "expected": 1779003390000,
+      "toleranceMs": 300000,
+      "note": "Grafana's scheduler delayed first eval by ~3 min after rule creation (newly-provisioned rule warmup). Our evaluator anchors at samples[0].t and sees the threshold cross immediately, so Pending starts ~172s earlier than Grafana's observed activeAt. Documented as a `Grafana scheduler runtime artifact` in docs/02-architecture.md — not a target for the evaluator to model. Loosened tolerance to 300000ms (5 min) to accommodate; the firingEntryOffsetFromPending assertion below verifies the load-bearing for-gate algorithm."
+    },
+    "firingEntryWithinMs": {
+      "expected": 1779003510000,
+      "toleranceMs": 300000,
+      "note": "Same scheduler-startup divergence as pendingEntryWithinMs."
+    },
+    "firingEntryOffsetFromPending": {
+      "expectedMs": 120000,
+      "toleranceMs": 5000,
+      "note": "Tight tolerance — this is the algorithm we're actually testing. Firing must enter exactly `for: 2m` after Pending, regardless of where Pending starts."
+    }
+  }
+}
