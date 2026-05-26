@@ -1,6 +1,6 @@
 {
   "name": "@alert-whatif/core",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "description": "Framework-agnostic alert evaluator and scenario library. Pure TypeScript — no React, no Vue, no Grafana SDK. Consumed by @alert-whatif/plugin and @alert-whatif/demo.",
   "license": "MIT",
   "author": "Alertcraft",
