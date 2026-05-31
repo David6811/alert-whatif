@@ -41,7 +41,7 @@ import {
   TARGET_CHART_SPAN_MS,
   RIGHT_ANCHOR_PAD_MS,
 } from './constants';
-import { thresholdYValues, padDomain, niceCeil } from './geometry';
+import { thresholdYValues, padDomain, niceCeil, thresholdCenteredDomain } from './geometry';
 import {
   computeEvalTicks,
   computeDisplayTicks,
@@ -295,10 +295,23 @@ function ChartBody({
   const sampleValues = samples.map((s) => s.v).filter((v) => Number.isFinite(v));
   const rawMin = sampleValues.length > 0 ? Math.min(...sampleValues) : 0;
   const rawMax = sampleValues.length > 0 ? Math.max(...sampleValues) : 1;
-  // Override (Live's fixed cap) keeps pixel height stable across polls;
-  // otherwise niceCeil steps in familiar buckets so the line doesn't jitter.
-  const yMax = yMaxOverride ?? niceCeil(rawMax);
-  const yMin = padDomain(rawMin, yMax).yMin;
+  // Override (Live's fixed cap) keeps pixel height stable across polls.
+  // Instant rules centre the domain on the threshold so the line sits mid-chart
+  // (see thresholdCenteredDomain); range+reduce rules keep the data-driven
+  // [0, niceCeil(max)] scaling, where niceCeil steps in familiar buckets so the
+  // line doesn't jitter.
+  const isInstant = reducer === undefined;
+  let yMin: number;
+  let yMax: number;
+  if (yMaxOverride !== undefined) {
+    yMax = yMaxOverride;
+    yMin = padDomain(rawMin, yMax).yMin;
+  } else if (isInstant) {
+    ({ yMin, yMax } = thresholdCenteredDomain(rawMin, rawMax, thresholdYValues(threshold)));
+  } else {
+    yMax = niceCeil(rawMax);
+    yMin = padDomain(rawMin, yMax).yMin;
+  }
   const ySpan = yMax - yMin || 1;
 
   const xPct = (t: number) => ((t - chartMinT) / tSpan) * 100;
@@ -398,8 +411,7 @@ function ChartBody({
       : null;
   // Phase timing MUST stay in sync with the CSS keyframes in index.css. Flash
   // + fade start after the last sweep dot ends. Instant rules skip the sweep —
-  // only the result-pop dot, zero delay.
-  const isInstant = reducer === undefined;
+  // only the result-pop dot, zero delay. (isInstant computed above for the Y domain.)
   const N = isInstant ? 0 : animationWindowSamples.length;
   const lastSweepEndMs = N > 0 ? (N - 1) * SWEEP_STAGGER_MS + SWEEP_PER_DOT_MS : 0;
   const flashDelayMs = lastSweepEndMs + FLASH_GAP_MS;
