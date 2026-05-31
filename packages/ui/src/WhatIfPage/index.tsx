@@ -1362,7 +1362,10 @@ function PageShell({
             {...(effectiveMode === 'live'
               ? {
                   rightAnchorT: liveNow + scrubOffsetMs,
-                  yMax: 6,
+                  // Fixed cap suits the rate-based burst demo (0–8). Instant
+                  // gauges span a wide range and need the threshold-centred
+                  // domain (MetricChart) instead, so skip the override there.
+                  ...(workingConfig.instant ? {} : { yMax: 6 }),
                   ...(live.lastPollAt !== null ? { pollSignal: live.lastPollAt } : {}),
                   // GRAFANA history bar only when the oracle exists (demo);
                   // plugin disables the dev-only comparison.

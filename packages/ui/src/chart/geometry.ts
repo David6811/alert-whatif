@@ -23,4 +23,33 @@ function niceCeil(x: number): number {
   return niceNorm * base;
 }
 
-export { thresholdYValues, padDomain, niceCeil };
+// Instant rules compare the raw value against a threshold, and that value can
+// have a wide dynamic range (e.g. queue lag 28s normal → 600s stuck). Scaling
+// the Y axis to [0, niceCeil(max)] buries the threshold near the bottom, hiding
+// what happens below it. Instead anchor the domain on the (constant) threshold
+// so it sits at the vertical centre — symmetric headroom both ways, and the
+// axis stays stable across ticks because it no longer tracks the data peak.
+function thresholdCenteredDomain(
+  rawMin: number,
+  rawMax: number,
+  thresholdYs: number[],
+): { yMin: number; yMax: number } {
+  const finite = thresholdYs.filter((t) => Number.isFinite(t));
+  if (finite.length === 0 || !Number.isFinite(rawMin) || !Number.isFinite(rawMax)) {
+    return padDomain(rawMin, niceCeil(rawMax));
+  }
+  const center = finite.reduce((sum, t) => sum + t, 0) / finite.length;
+  const reach = Math.max(
+    rawMax - center,
+    center - rawMin,
+    ...finite.map((t) => Math.abs(t - center)),
+    Math.max(Math.abs(center), 1) * 0.1, // guard against a zero-span domain
+  );
+  const half = niceCeil(reach * 1.15);
+  // Clamp the floor to 0 for non-negative data (the threshold then sits
+  // slightly above centre, still with ample room below).
+  const yMin = rawMin >= 0 ? Math.max(0, center - half) : center - half;
+  return { yMin, yMax: center + half };
+}
+
+export { thresholdYValues, padDomain, niceCeil, thresholdCenteredDomain };
