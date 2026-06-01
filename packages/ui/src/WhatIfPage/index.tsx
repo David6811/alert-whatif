@@ -13,6 +13,7 @@ import {
   type Tick,
 } from '@alert-whatif/core';
 import { animationScope } from '../util/animations';
+import { buildTimeline } from '../util/timeline';
 import { ComputeTracePanel } from '../components/ComputeTracePanel';
 import {
   loadGrafanaHistory,
@@ -853,6 +854,7 @@ function PageShell({
   };
 
   const [exportToast, setExportToast] = useState<string | null>(null);
+  const [timelineText, setTimelineText] = useState<string | null>(null);
   const exportToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flashExportToast = (msg: string) => {
     if (exportToastTimerRef.current) clearTimeout(exportToastTimerRef.current);
@@ -920,6 +922,25 @@ function PageShell({
         `✓ Exported "${dataset.displayName}" · ${dataset.samples.length} samples`,
       );
     }
+  };
+
+  // Build the detection-latency timeline (enqueue → threshold → pending → fire)
+  // from the current What-If events and show it in a copyable panel.
+  const showTimeline = () => {
+    const title =
+      mode === 'live' && liveContext !== undefined
+        ? liveContext.ruleTitle
+        : (dataset?.displayName ?? 'rule');
+    setTimelineText(
+      buildTimeline({
+        ruleTitle: title,
+        events,
+        samples,
+        threshold: workingConfig.threshold,
+        evalIntervalMs: workingConfig.evaluationInterval,
+        forMs: workingConfig.forDuration,
+      }),
+    );
   };
 
   // Validate a .json file, append to capturedDatasets, and switch to it.
@@ -1157,6 +1178,7 @@ function PageShell({
             : 'No rule selected.';
 
   return (
+    <>
     <PageLayout
       className={animationScope}
       headerLeft={
@@ -1220,6 +1242,7 @@ function PageShell({
                   })}
               onExport={exportCurrent}
               canExport={live.samples.length > 0}
+              onExportTimeline={showTimeline}
               exportToast={exportToast}
               {...(ruleListEnabled
                 ? {
@@ -1261,6 +1284,7 @@ function PageShell({
               tickIndex={tickIndex}
               tickCount={tickCount}
               onExport={exportCurrent}
+              onExportTimeline={showTimeline}
               onImport={(file) => {
                 void importFromFile(file).then((result) => {
                   if (!result.ok) {
@@ -1438,8 +1462,88 @@ function PageShell({
         )
       )}
     />
+    {timelineText !== null ? (
+      <div style={timelineOverlayStyle} onClick={() => setTimelineText(null)}>
+        <div style={timelineBoxStyle} onClick={(e) => e.stopPropagation()}>
+          <div style={timelineHeaderStyle}>
+            <span>Detection-latency timeline</span>
+            <span style={{ flex: 1 }} />
+            <button
+              type="button"
+              style={timelineBtnStyle}
+              onClick={() => void navigator.clipboard?.writeText(timelineText)}
+            >
+              📋 Copy
+            </button>
+            <button
+              type="button"
+              style={timelineBtnStyle}
+              onClick={() => setTimelineText(null)}
+            >
+              ✕ Close
+            </button>
+          </div>
+          <pre style={timelinePreStyle}>{timelineText}</pre>
+        </div>
+      </div>
+    ) : null}
+    </>
   );
 }
+
+const timelineOverlayStyle: React.CSSProperties = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 1000,
+  background: 'rgba(0,0,0,0.6)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '1rem',
+};
+
+const timelineBoxStyle: React.CSSProperties = {
+  width: '100%',
+  maxWidth: 680,
+  maxHeight: '80vh',
+  overflow: 'auto',
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border-card)',
+  borderRadius: 8,
+  boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+};
+
+const timelineHeaderStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  padding: '0.6rem 0.85rem',
+  borderBottom: '1px solid var(--border-card)',
+  fontSize: '0.85rem',
+  fontWeight: 600,
+  color: 'var(--text-primary)',
+};
+
+const timelineBtnStyle: React.CSSProperties = {
+  padding: '2px 10px',
+  fontSize: '0.78rem',
+  border: '1px solid var(--border-card)',
+  borderRadius: 4,
+  background: 'var(--bg-input, transparent)',
+  color: 'var(--text-primary)',
+  cursor: 'pointer',
+};
+
+const timelinePreStyle: React.CSSProperties = {
+  margin: 0,
+  padding: '0.85rem 1rem',
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  fontSize: '0.8rem',
+  lineHeight: 1.6,
+  color: 'var(--text-primary)',
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
+};
 
 function EmptyMessage({ text }: { readonly text: string }) {
   return (
