@@ -29,6 +29,8 @@ type LiveProps = CommonProps & {
   readonly canSnapshot?: boolean;
   readonly onExport?: () => void;
   readonly canExport?: boolean;
+  // Opens the detection-latency timeline panel (enqueue → threshold → pending → fire).
+  readonly onExportTimeline?: () => void;
   // Plugin uses Import in place of Snapshot.
   readonly onImport?: (file: File) => void;
   // Brief post-export confirmation carrying the file's cutoff timestamp.
@@ -47,6 +49,7 @@ type MockProps = CommonProps & {
   // chip alone.
   readonly grafanaState?: GrafanaAlertState;
   readonly onExport?: () => void;
+  readonly onExportTimeline?: () => void;
   readonly onImport?: (file: File) => void;
 };
 
@@ -111,6 +114,16 @@ export function LiveStatusStrip(props: Props) {
                 📸 Snapshot
               </button>
             ) : null}
+            {props.onExportTimeline !== undefined ? (
+              <button
+                type="button"
+                onClick={props.onExportTimeline}
+                style={iconButtonStyle(true)}
+                title="Show the detection-latency timeline: job enqueued → threshold reached → Pending → Firing (email), with total latency"
+              >
+                🧭 Timeline
+              </button>
+            ) : null}
             {props.onExport !== undefined ? (
               <button
                 type="button"
@@ -150,6 +163,16 @@ export function LiveStatusStrip(props: Props) {
               tick <strong>{props.tickIndex}</strong> / {props.tickCount}
             </span>
             <span style={actionSlotStyle}>{props.replayButtons}</span>
+            {props.onExportTimeline !== undefined ? (
+              <button
+                type="button"
+                onClick={props.onExportTimeline}
+                style={iconButtonStyle(true)}
+                title="Show the detection-latency timeline: job enqueued → threshold reached → Pending → Firing (email), with total latency"
+              >
+                🧭 Timeline
+              </button>
+            ) : null}
             {props.onExport !== undefined ? (
               <button
                 type="button"

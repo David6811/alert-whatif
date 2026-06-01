@@ -159,22 +159,32 @@ export function ParamControls({
           <ModeToggle mode={ruleMetadata?.query.mode ?? 'range'} />
         </Row>
         {/* Step + cap feed computeEffectiveStepMs upstream of calc/, so a tweak
-            changes the Prometheus step and sample density. */}
-        <Row label="intervalMs" path="expressions.A.model.intervalMs">
-          <NumberInput
-            value={config.intervalMs}
-            onChange={(v) => set('intervalMs', v)}
-            min={1}
-            step={1000}
-          />
+            changes the Prometheus step and sample density — but only for range
+            queries. An instant query returns a single point at eval time, so
+            both are inert; grey them out (like relativeTimeRange.to). */}
+        <Row label="intervalMs" path="expressions.A.model.intervalMs" disabled={config.instant}>
+          {config.instant ? (
+            <ReadOnlyText value={`${config.intervalMs} (n/a · instant)`} />
+          ) : (
+            <NumberInput
+              value={config.intervalMs}
+              onChange={(v) => set('intervalMs', v)}
+              min={1}
+              step={1000}
+            />
+          )}
         </Row>
-        <Row label="maxDataPoints" path="expressions.A.model.maxDataPoints">
-          <NumberInput
-            value={config.maxDataPoints}
-            onChange={(v) => set('maxDataPoints', v)}
-            min={1}
-            step={1}
-          />
+        <Row label="maxDataPoints" path="expressions.A.model.maxDataPoints" disabled={config.instant}>
+          {config.instant ? (
+            <ReadOnlyText value={`${config.maxDataPoints} (n/a · instant)`} />
+          ) : (
+            <NumberInput
+              value={config.maxDataPoints}
+              onChange={(v) => set('maxDataPoints', v)}
+              min={1}
+              step={1}
+            />
+          )}
         </Row>
         {config.instant ? null : (
           <Row label="relativeTimeRange.from" path="expressions.A.relativeTimeRange.from">
